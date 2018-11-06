@@ -99,7 +99,7 @@ class Board extends Component {
             return ({selectedTile : [],
                     selectedPiece : [] })
           })
-        }else if(this.state.selectedPiece[0].calculateMoves(this.state.board, this.state.selectedTile).concat(this.state.selectedPiece[0].calculateSpecialMoves(this.state.board, this.state.selectedTile)).indexOf(newPosition) >= 0){
+        }else if(this.state.selectedPiece[0].calculateMoves(this.state.board, this.state.selectedTile[0]).concat(this.state.selectedPiece[0].calculateSpecialMoves(this.state.board, this.state.selectedTile[0])).indexOf(newPosition) >= 0){
           this.executeMove(newPosition)
           this.state.board.forEach(a => this.state.board[a.coordinate].available = false)
         }
@@ -144,6 +144,7 @@ class Board extends Component {
       let newSelectedTile = []
       let rootedTiles = this.logic.findRoots(newBoard)
       let turn = this.state.turn * -1
+      this.props.endMove()
       return ({board:newBoard,
                 selectedPiece: newSelectedPiece,
                 selectedTile: newSelectedTile,
@@ -197,6 +198,13 @@ class Board extends Component {
 
   }
   render() {
+    if(typeof this.props.selectedTile !== 'undefined' && !this.state.moving){
+      
+      this.state.selectedTile = this.props.selectedTile;
+      this.state.selectedPiece = this.props.selectedPiece;
+      this.state.moving = true;
+      this.executeMove(this.props.newPosition)
+    }
     return (
       <div>
       <div> Turn of {this.state.turn}</div>

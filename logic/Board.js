@@ -1,31 +1,81 @@
-import { Rook } from './pieces/Rook'
-import { Tile } from './board/Tile'
-import { EmptyTile } from './board/EmptyTile'
-import { OffTile } from './board/OffTile'
-import { Bishop } from './pieces/Bishop'
-import { Knight } from './pieces/Knight'
-import { Queen } from './pieces/Queen'
-import { King } from './pieces/King'
-import { Pawn } from './pieces/Pawn'
-import Logic  from './game/Logic'
+const Rook = require('./pieces/Rook')
+const Knight = require('./pieces/Knight')
+const King = require('./pieces/King')
+const Queen = require('./pieces/Queen')
+const Pawn = require('./pieces/Pawn')
+const Bishop = require('./pieces/Bishop')
+
+module.exports = function Board (){
+
+  self = {
+          board: [],
+          selectedPiece:[],
+          selectedTile:[],
+          gameEnded:false,
+          gameWinner:0,
+          rootedTiles:[],
+          turn:-1
+        }
+
+  let board = []
+  for(let i =0 ; i < 110 ; i++){
+    if(i < 21 || i > 88  ){
+        board.push(OffTile(i))
+    }else if((i+1)%10 === 0 || i%10 ===0){
+        board.push(OffTile(i))
+    }else{
+    board.push(EmptyTile(i))
+    }
+  }
+    self.board = buildNewBoard(board);
 
 
+    return self
+
+}
 
 
+function EmptyTile (position){
+  var self = {
+    coordinate:position,
+    isEmpty: true,
+    selected: false,
+    available:false,
+    piece: {name:"empty"}
 
-class Board extends Component {
-  constructor(props){
-      this.state = {
-        board: [],
-        gameEnded:false,
-        gameWinner:0,
-        rootedTiles:[],
-        turn:-1
-      }
-      this.logic = new Logic()
+    }
+    return self
+  }
+function OffTile (position){
+    var self = {
+      coordinate:position,
+      piece:{name: "outsider", alliance: 0},
+      isEmpty: false,
+      getPiece: false,
+    }
+    return self
+
+
   }
 
-  buildNewBoard(board){
+
+function Tile (position, piece){
+    var self = {
+      coordinate:position,
+      piece:piece,
+      selected:false,
+      isEmpty: false,
+      available:false,
+      getPiece: function (){
+        return this.piece
+      }
+    }
+    return self
+
+
+  }
+
+  function buildNewBoard(board){
 
     board[21] = Tile(21, Rook(1))
     board[22] = Tile(22, Knight(1))
@@ -65,142 +115,3 @@ class Board extends Component {
 
     return board
   }
-
-  selectTile(newPosition, piece){
-    if(!this.state.gameEnded){
-      if(this.state.selectedTile.length === 0){
-          if(piece.alliance === this.state.turn){
-          if(piece.name !== "empty" && this.state.rootedTiles.indexOf(newPosition) <0){
-            this.state.board[newPosition].selected =true
-            var availableMoves = piece.calculateMoves(this.state.board, newPosition).concat(piece.calculateSpecialMoves(this.state.board, newPosition))
-            availableMoves.forEach(a => this.state.board[a].available = true)
-            this.setState( function(){
-              var selectedTile = [newPosition]
-              var selectedPiece = [piece]
-              return({selectedPiece: selectedPiece,
-                      selectedTile: selectedTile})
-            })
-          }
-        }
-      }
-      else{
-        this.handleMove(newPosition)
-        if(newPosition === this.state.selectedTile[0]){
-          this.state.board.forEach(a => this.state.board[a.coordinate].available = false)
-          this.state.board[newPosition].selected = false
-          this.setState(function (){
-            return ({selectedTile : [],
-                    selectedPiece : [] })
-          })
-        }else if(this.state.selectedPiece[0].calculateMoves(this.state.board, this.state.selectedTile).concat(this.state.selectedPiece[0].calculateSpecialMoves(this.state.board, this.state.selectedTile)).indexOf(newPosition) >= 0){
-          this.executeMove(newPosition)
-          this.state.board.forEach(a => this.state.board[a.coordinate].available = false)
-        }
-
-      }
-    }
-  }
-
-  handleMove(newPosition){
-    this.props.makeMove(this.state.selectedTile, this.state.selectedPiece, newPosition)
-    console.log("handling Click")
-  }
-  executeMove(position){
-
-    this.setState(function(){
-      let newBoard = this.state.board
-      let newPiece = this.state.selectedPiece[0]
-      if(newPiece.name === "King" && !newPiece.hasMoved && (position === 82 || position === 22 )){
-        var rookFinalPosition = newPiece.alliance === -1 ? 83 : 23
-        var rookActualPosition = newPiece.alliance === -1 ? 81 : 21
-        let newRook = this.state.board[rookActualPosition].piece
-        newRook.hasMoved = true
-        newBoard[rookFinalPosition] = Tile(rookFinalPosition, newRook)
-        newBoard[rookActualPosition] = EmptyTile(rookActualPosition)
-
-      }
-      if(newPiece.name === "King" && !newPiece.hasMoved && (position === 87 || position === 27 )){
-        var rookFinalPosition = newPiece.alliance === -1 ? 86 : 26
-        var rookActualPosition = newPiece.alliance === -1 ? 88 : 28
-        let newRook = this.state.board[rookActualPosition].piece
-        newRook.hasMoved = true
-        newBoard[rookFinalPosition] = Tile(rookFinalPosition, newRook)
-        newBoard[rookActualPosition] = EmptyTile(rookActualPosition)
-
-      }
-      newPiece.hasMoved = true
-      newBoard[position] = Tile(position, newPiece)
-      newBoard[this.state.selectedTile] = EmptyTile(this.state.selectedTile[0])
-      let gameEnded = this.logic.isGameEnded(newBoard)
-      let gameWinner = this.logic.selectWinner(newBoard);
-      let newSelectedPiece = []
-      let newSelectedTile = []
-      let rootedTiles = this.logic.findRoots(newBoard)
-      let turn = this.state.turn * -1
-      return ({board:newBoard,
-                selectedPiece: newSelectedPiece,
-                selectedTile: newSelectedTile,
-                gameEnded: gameEnded,
-                gameWinner: gameWinner,
-                rootedTiles: rootedTiles,
-                turn: turn})})
-
-  }
-
-  drawTile(tile){
-    return(<Square tile={tile} piece={tile.piece} position ={tile.coordinate} handleClick={this.selectTile.bind(this)}/>)
-  }
-  drawEmptyTile(tile){
-    return (<Square tile={tile} piece={tile.piece} position ={tile.coordinate} handleClick={this.selectTile.bind(this)}/>)
-  }
-  componentWillMount(){
-    const logic = new Logic()
-
-    this.setState(function () {
-      let board = []
-      for(let i =0 ; i < 110 ; i++){
-        if(i < 21 || i > 88  ){
-            board.push(OffTile(i))
-        }else if((i+1)%10 === 0 || i%10 ===0){
-            board.push(OffTile(i))
-        }else{
-        board.push(EmptyTile(i))
-      }
-      }
-
-
-      board = this.buildNewBoard(board)
-
-      return({board})
-    })
-  }
-
-  displayBoard (){
-    let boardDisplay = []
-    let board = this.state.board
-    for(let i =21 ; i< 89 ; i++){
-      if((i+1)%10 !== 0 && i%10 !==0){
-      boardDisplay.push(this.drawTile(board[i]))
-      }
-      else {
-        boardDisplay.push(<break style={{  flexBasis: '100%', width: 0, height: 0}}></break>)
-      }
-    }
-    return(boardDisplay)
-
-  }
-  render() {
-    return (
-      <div>
-      <div> Turn of {this.state.turn}</div>
-      <div style ={{display:'flex'}}><section style ={{display:'flex', flexFlow: 'row wrap'}}>{this.displayBoard()}</section></div>      {this.state.gameEnded === true && window.alert(this.state.gameWinner + "Won the Game!")}
-      </div>
-    );
-  }
-}
-
-//      <div style ={{display:'flex'}}><section style ={{display:'flex', flexFlow: 'row wrap'}}>{this.displayBoard()}</section></div>
-
-
-
-export default Board;
