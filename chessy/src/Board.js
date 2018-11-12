@@ -203,8 +203,9 @@ class Board extends Component {
 
     if(typeof this.props.selectedTile !== 'undefined'){
       console.log("Moving")
+
       this.state.selectedTile = this.props.selectedTile;
-      this.state.selectedPiece = this.props.selectedPiece;
+      this.state.selectedPiece = [this.state.board[this.props.selectedTile[0]].piece];
       this.executeMove(this.props.newPosition)
       this.props.endMove()
     }

@@ -47,12 +47,12 @@ io.on('connection', socket => {
     GAMES[idGame].board.selectedPiece = GAMES[idGame].board.board[selectedTile].piece
     GAMES[idGame].board = judge(GAMES[idGame].board, newPosition);
     if(player === -1 ){
-      console.log(player)
+      console.log( selectedTile, selectedPiece, newPosition, player)
       console.log("emiting move to player 2")
       GAMES[idGame].player2.socket.emit('newMoveDone', selectedTile, selectedPiece, newPosition)
 
     }else{
-      console.log(player)
+      console.log( selectedTile, selectedPiece, newPosition, player)
       console.log("emiting move to player 1")
 
       GAMES[idGame].player1.socket.emit('newMoveDone', selectedTile, selectedPiece, newPosition)
