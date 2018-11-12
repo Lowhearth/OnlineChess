@@ -17,24 +17,47 @@ const server = http.createServer(app)
 
 const io = socketIO(server)
 
-var GAMES = {}
-
+var GAMES = []
+GAMES.push("EmptyGame")
 io.on('connection', socket => {
   console.log('New client connected')
 
-  var idPlayer = Math.floor(Math.random() * 10);
-  var idGame =  1
+  var idPlayer = Math.floor(Math.random() * 100);
+  var idGame = parseInt(placePlayer(GAMES))
+  console.log("id game" + idGame)
+  console.log("id player" + idPlayer)
+  if(typeof GAMES[idGame] === 'undefined'){
+    var currentPlayer = player(idPlayer,-1, socket);
+    GAMES.push(game(idGame, currentPlayer, board()))
+    socket.emit("assignSlot", -1)
+    console.log("assigned  -1")
 
-    GAMES[idGame] = game(idGame, player(idPlayer,1,socket), board())
-    GAMES[idGame].player2 = player(idPlayer,-1,socket)
+  }else{
+    var currentPlayer = player(idPlayer,1, socket);
+    console.log("assigned  1")
+    GAMES[idGame] = Object.assign({}, GAMES[idGame], {player2: currentPlayer});
+      socket.emit("assignSlot", 1)
 
-  socket.on('newMove', (selectedTile, selectedPiece, newPosition) => {
-    console.log("moveMade")
+  }
+
+
+  socket.on('newMove', (selectedTile, selectedPiece, newPosition, player) => {
+    console.log("moveMade" + player)
     GAMES[idGame].board.selectedTile = selectedTile
     GAMES[idGame].board.selectedPiece = GAMES[idGame].board.board[selectedTile].piece
     GAMES[idGame].board = judge(GAMES[idGame].board, newPosition);
-    console.log(GAMES[idGame].board )
-    GAMES[idGame].player2.socket.emit('newMoveDone', selectedTile, selectedPiece, newPosition)
+    if(player === -1 ){
+      console.log(player)
+      console.log("emiting move to player 2")
+      GAMES[idGame].player2.socket.emit('newMoveDone', selectedTile, selectedPiece, newPosition)
+
+    }else{
+      console.log(player)
+      console.log("emiting move to player 1")
+
+      GAMES[idGame].player1.socket.emit('newMoveDone', selectedTile, selectedPiece, newPosition)
+
+    }
 
   })
 
@@ -42,5 +65,15 @@ io.on('connection', socket => {
     console.log('user disconnected')
   })
 })
+
+function placePlayer (games){
+  for(var i = 1 ; i<=games.length ; i++){
+    if(typeof games[i] === 'undefined' || typeof games[i].player2 === 'undefined'){
+       console.log("player is undefined")
+        return i
+    }
+  }
+  return games.length
+}
 
 server.listen(port, () => console.log(`Listening on port ${port}`))

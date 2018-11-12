@@ -17,16 +17,17 @@ class App extends Component {
   }
 
 makeMove = (selectedTile, selectedPiece, newPosition) => {
-  console.log("sending Package" + selectedTile + selectedPiece + newPosition)
-  this.socket.emit("newMove", selectedTile, selectedPiece, newPosition)
+  console.log("sending Package" + selectedTile + selectedPiece + newPosition + this.state.player)
+  this.socket.emit("newMove", selectedTile, selectedPiece, newPosition, this.state.player)
 }
 endMove = () =>{
   this.setState(() => {return ({ selectedTile: undefined,
                                  selectedPiece: undefined,
-                                  newPosition : undefined})})
+                                  newPosition : undefined
+                                })})
 }
 
-  render() {
+  componentDidMount(){
     this.socket.on('newMoveDone', (selectedTile, selectedPiece, newPosition) => {
       console.log("moveeed")
       this.setState(() =>{
@@ -37,11 +38,20 @@ endMove = () =>{
       })
       })
     })
+    this.socket.on("assignSlot", (player) =>{
+        console.log("asigned Slot" + player)
+        this.setState(() =>{
+          return({player: player})
+        })
+    })
+  }
+  render() {
+
 
 
     return (
       <div>
-      <Board makeMove={this.makeMove.bind(this)} selectedTile={this.state.selectedTile} selectedPiece={this.state.selectedPiece} newPosition={this.state.newPosition} endMove ={this.endMove.bind(this)}/>
+      <Board makeMove={this.makeMove.bind(this)} player={this.state.player} moveHasEnded={typeof this.state.selectedTile === 'undefined' ? 0 : 1 }selectedTile={this.state.selectedTile} selectedPiece={this.state.selectedPiece} newPosition={this.state.newPosition} endMove ={this.endMove.bind(this)}/>
       </div>
     );
   }

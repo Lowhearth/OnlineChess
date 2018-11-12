@@ -77,7 +77,7 @@ class Board extends Component {
     if(!this.state.gameEnded){
       if(this.state.selectedTile.length === 0){
           if(piece.alliance === this.state.turn){
-          if(piece.name !== "empty" && this.state.rootedTiles.indexOf(newPosition) <0){
+          if(piece.name !== "empty" && this.state.rootedTiles.indexOf(newPosition) <0 && this.props.player === this.state.turn){
             this.state.board[newPosition].selected =true
             var availableMoves = piece.calculateMoves(this.state.board, newPosition).concat(piece.calculateSpecialMoves(this.state.board, newPosition))
             availableMoves.forEach(a => this.state.board[a].available = true)
@@ -90,8 +90,7 @@ class Board extends Component {
           }
         }
       }
-      else{
-        this.handleMove(newPosition)
+      else if(this.props.player === this.state.turn){
         if(newPosition === this.state.selectedTile[0]){
           this.state.board.forEach(a => this.state.board[a.coordinate].available = false)
           this.state.board[newPosition].selected = false
@@ -100,6 +99,7 @@ class Board extends Component {
                     selectedPiece : [] })
           })
         }else if(this.state.selectedPiece[0].calculateMoves(this.state.board, this.state.selectedTile[0]).concat(this.state.selectedPiece[0].calculateSpecialMoves(this.state.board, this.state.selectedTile[0])).indexOf(newPosition) >= 0){
+          this.handleMove(newPosition)
           this.executeMove(newPosition)
           this.state.board.forEach(a => this.state.board[a.coordinate].available = false)
         }
@@ -115,6 +115,7 @@ class Board extends Component {
   executeMove(position){
 
     this.setState(function(){
+      console.log("executing the move")
       let newBoard = this.state.board
       let newPiece = this.state.selectedPiece[0]
       if(newPiece.name === "King" && !newPiece.hasMoved && (position === 82 || position === 22 )){
@@ -151,7 +152,8 @@ class Board extends Component {
                 gameEnded: gameEnded,
                 gameWinner: gameWinner,
                 rootedTiles: rootedTiles,
-                turn: turn})})
+                turn: turn
+                })})
 
   }
 
@@ -198,16 +200,17 @@ class Board extends Component {
 
   }
   render() {
-    if(typeof this.props.selectedTile !== 'undefined' && !this.state.moving){
-      
+
+    if(typeof this.props.selectedTile !== 'undefined'){
+      console.log("Moving")
       this.state.selectedTile = this.props.selectedTile;
       this.state.selectedPiece = this.props.selectedPiece;
-      this.state.moving = true;
       this.executeMove(this.props.newPosition)
+      this.props.endMove()
     }
     return (
       <div>
-      <div> Turn of {this.state.turn}</div>
+      <div> {this.state.turn === this.props.player ? "Your turn" : "Waiting Oponents Move"}</div>
       <div style ={{display:'flex'}}><section style ={{display:'flex', flexFlow: 'row wrap'}}>{this.displayBoard()}</section></div>      {this.state.gameEnded === true && window.alert(this.state.gameWinner + "Won the Game!")}
       </div>
     );

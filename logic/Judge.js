@@ -34,8 +34,8 @@ function executeMove(state, position){
     newBoard[state.selectedTile] = EmptyTile(state.selectedTile[0])
     let gameEnded = isGameEnded(newBoard)
     let gameWinner = selectWinner(newBoard);
-    let newSelectedPiece = []
-    let newSelectedTile = []
+    let newSelectedPiece = undefined
+    let newSelectedTile = undefined
     let rootedTiles = findRoots(newBoard)
     let turn = state.turn * -1
     return ({board:newBoard,
