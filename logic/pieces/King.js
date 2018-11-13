@@ -26,6 +26,8 @@ module.exports = function King(Alliance){
       return posibleMoves
     },
     calculateSpecialMoves: function(board, position){
+
+      console.log("calcuulating special moves with position  ")
       var hasMove = this.hasMove
       var normalMoves=this.normalMoves
       var posibleMoves = []
@@ -33,12 +35,12 @@ module.exports = function King(Alliance){
       var lPosition = this.alliance === -1 ? 82 : 22
       var rRook = this.alliance === -1 ? 88 : 28
       var rPosition = this.alliance === -1 ? 87 : 27
-      var logic = new Logic()
       if(!this.hasMoved &&  board[lRook].piece.name=== "Rook" && !board[lRook].piece.hasMoved){
         var freeWay = true
         for( var i = 1; i<=3; i++){
-          var pos = position- i
-          if(!board[pos].isEmpty || logic.isUnderAttack(board, pos, this.alliance)){
+          var pos = parseInt(position) - parseInt(i)
+          console.log("Tile at pos" + JSON.stringify(board[pos].isEmpty))
+          if(!board[parseInt(pos)].isEmpty || isUnderAttack(board, pos, this.alliance)){
             freeWay = false
             i = 4
           }
@@ -52,8 +54,8 @@ module.exports = function King(Alliance){
       if(!this.hasMoved &&  board[rRook].piece.name=== "Rook" && !board[rRook].piece.hasMoved){
         var freeWay = true
         for( var i = 1; i<=2; i++){
-          var pos = position + i
-          if(!board[pos].isEmpty || logic.isUnderAttack(board, pos, this.alliance)){
+          var pos = parseInt(position) + parseInt(i)
+          if(!board[pos].isEmpty || isUnderAttack(board, pos, this.alliance)){
             freeWay = false
             i = 4
           }

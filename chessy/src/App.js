@@ -10,7 +10,7 @@ class App extends Component {
     super()
 
     this.state = {
-      endpoint: "http://localhost:4000",
+      endpoint: "http://10.168.21.78:4000",
 
     }
     this.socket = socketIOClient(this.state.endpoint)
